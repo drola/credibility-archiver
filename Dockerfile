@@ -1,0 +1,2 @@
+FROM mdrolc/node:latest
+

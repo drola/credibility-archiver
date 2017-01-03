@@ -1,0 +1,24 @@
+{
+  "name": "credibility-archiver",
+  "version": "1.0.0",
+  "description": "Takes screenshot of websites at regular intervals and produces galleries",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drola/credibility-archiver.git"
+  },
+  "author": "Matjaz Drolc",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/drola/credibility-archiver/issues"
+  },
+  "homepage": "https://github.com/drola/credibility-archiver#readme",
+  "dependencies": {
+    "async": "^2.1.4",
+    "handlebars": "^4.0.6",
+    "phantomjs-prebuilt": "^2.1.14"
+  }
+}
