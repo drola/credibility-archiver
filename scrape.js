@@ -1,13 +1,19 @@
 //TODO: Load sites from json
 //TODO: Add code to hide cookie warnings
-
+var _ = require('lodash');
 var path = require('path');
 var fs = require('fs');
 var async = require('async');
 var childProcess = require('child_process');
-var phantomjs = require('phantomjs-prebuilt');
-var binPath = phantomjs.path;
 var handlebars = require('handlebars');
+
+
+
+var slimerjsPath = '/usr/bin/slimerjs';
+if(!fs.existsSync(slimerjsPath)) {
+	slimerjsPath = path.join(__dirname, 'node_modules/.bin/slimerjs');
+}
+
 var date = new Date();
 var pad2digits = function(n) {
 	if (n >= 10) {
@@ -31,17 +37,18 @@ var renderSite = function(siteInfo, callback) {
 		fs.mkdirSync(outputDir);
 	}
 
-	var outFilename = path.join(outputDir, timestampSlug + ".png");
+	var outFilename = path.join(outputDir, timestampSlug + ".jpg");
 
 
 	var childArgs = [
+
 	  path.join(__dirname, 'rasterize.js'),
 	  url,
-	  outFilename,
-	  "1280px"
+	  outFilename
 	];
 
-	childProcess.execFile(binPath, childArgs, callback);
+
+	childProcess.execFile(slimerjsPath, childArgs, callback);
 };
 
 var sites = [
@@ -49,18 +56,46 @@ var sites = [
 		"slug": "delo",
 		"url": "http://www.delo.si",
 		"title": "Delo"
+	},
+	{
+		"slug": "dnevnik",
+		"url": "https://www.dnevnik.si",
+		"title": "Dnevnik"
+	},
+	{
+		"slug": "slovenskenovice",
+		"url": "http://www.slovenskenovice.si",
+		"title": "Slovenske novice"
+	},
+	{
+		"slug": "24ur",
+		"url": "http://www.24ur.com",
+		"title": "24ur"
+	},
+	{
+		"slug": "rtvslo",
+		"url": "http://www.rtvslo.si",
+		"title": "MMC RTV SLO"
+	},
+	{
+		"slug": "vecer",
+		"url": "http://www.vecer.si",
+		"title": "Večer"
 	}
 ]; 
 
-var scrapeSites = function(cb) { async.eachLimit(sites, 3, renderSite, cb) };
+var scrapeSites = function(cb) {
+	async.eachLimit(sites, 3, renderSite, cb);
+};
+
 var renderTemplates = function(cb) {
 	//Load list of all screenshots that we have
 	var files = {};
 	sites.forEach(function(siteInfo) {
-		var screenshotsDir = path.join(outdir, siteInfo.slug);
+		var screenshotsDir = path.join(outdir, 'screenshots', siteInfo.slug);
 		var filesInDir = fs.readdirSync(screenshotsDir);
 		files[siteInfo.slug] = filesInDir.map(function(filename) {
-			var res = filename.match(/^((\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2}))\.png/g);
+			var res = filename.match(/^((\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2}))\.jpg/);
 			if(res !== null) {
 				return {
 					timestamp: res[1],
@@ -81,41 +116,34 @@ var renderTemplates = function(cb) {
 
 	//Render
 	var templateFolder = path.join(__dirname, 'gallery-template');
-	var tplScreenshot = handlebars.compile(fs.readFileSync(path.join(templateFolder, "screenshot.html")));
-	var tplIndex = handlebars.compile(fs.readFileSync(path.join(templateFolder, "index.html")));
-	var tplHeader = handlebars.compile(fs.readFileSync(path.join(templateFolder, "head.html")));
-	var tplFooter = handlebars.compile(fs.readFileSync(path.join(templateFolder, "footer.html")));
-	var tplArchive = handlebars.compile(fs.readFileSync(path.join(templateFolder, "archive.html")));
-	var tplTimestamp = handlebars.compile(fs.readFileSync(path.join(templateFolder, "archive-timestamp.html")));
+	handlebars.registerPartial('header', fs.readFileSync(path.join(templateFolder, "header.html"), {encoding: "utf-8"}));
+	handlebars.registerPartial('footer', fs.readFileSync(path.join(templateFolder, "footer.html"), {encoding: "utf-8"}));
+	var tplScreenshot = handlebars.compile(fs.readFileSync(path.join(templateFolder, "screenshot.html"), {encoding: "utf-8"}));
+	var tplIndex = handlebars.compile(fs.readFileSync(path.join(templateFolder, "index.html"), {encoding: "utf-8"}));
+	var tplArchive = handlebars.compile(fs.readFileSync(path.join(templateFolder, "archive.html"), {encoding: "utf-8"}));
+	var tplTimestamp = handlebars.compile(fs.readFileSync(path.join(templateFolder, "archive-timestamp.html"), {encoding: "utf-8"}));
 
-	handlebars.registerPartial('header', tplHeader());
-	handlebars.registerPartial('footer', tplFooter());
 
 
 	//Render HTML files with individual screenshots
 	for(var siteSlug in files) {
-		var latestIndex = null;
-		files[siteSlug].forEach(function(screenshotInfo, idx) {
+		files[siteSlug].forEach(function(screenshotInfo) {
 			//TODO: Don't rerender if already exists
-			var fpe = screenshotInfo.split('.');
+			var fpe = screenshotInfo.filepath.split('.');
 			fpe[fpe.length - 1] = 'html';
 			var screenshotInfoPage = fpe.join('.');
 
 			fs.writeFileSync(screenshotInfoPage, tplScreenshot({screenshotInfo: screenshotInfo}));
-
-			if(latestIndex === null
-				|| screenshotInfo.localeCompare(files[siteSlug][latestIndex].timestamp) > 0) {
-				latestIndex = idx;
-			}
 		});
-
-
 	}
 
 	var filesGroupedByTimestamp = {};
 	for(var siteSlug in files) {
-		var latestIndex = null;
-		files[siteSlug].forEach(function(screenshotInfo, idx) {
+		files[siteSlug].forEach(function(screenshotInfo) {
+			if(filesGroupedByTimestamp[screenshotInfo.timestamp] === undefined) {
+				filesGroupedByTimestamp[screenshotInfo.timestamp] = {};
+			}
+
 			filesGroupedByTimestamp[screenshotInfo.timestamp][siteSlug] = screenshotInfo;
 		});
 	}
@@ -124,8 +152,8 @@ var renderTemplates = function(cb) {
 	var timestampsSorted = Object.keys(filesGroupedByTimestamp).sort();
 	timestampsSorted.forEach(function(timestamp) {
 		var outputFilename = path.join(outdir, 'archive-' + timestamp + '.html');
-		fs.writeFileSync(outFilename, tplTimestamp({
-			files: files,
+		fs.writeFileSync(outputFilename, tplTimestamp({
+			files: filesGroupedByTimestamp[timestamp],
 			timestamp: timestamp
 		}));
 	});
@@ -133,7 +161,7 @@ var renderTemplates = function(cb) {
 	//Make archive index
 	var archivePath = path.join(outdir, 'archive.html');
 	fs.writeFileSync(archivePath, tplArchive({
-		timestamps: timestamps.slice(0).reverse()
+		timestamps: timestampsSorted.slice(0).reverse()
 	}));
 
 	//Make front page
@@ -145,9 +173,12 @@ var renderTemplates = function(cb) {
 		timestamp: lastTimestamp
 	}));
 
+	cb();
+
 
 };
 
 async.series([
-	scrapeSites
+	scrapeSites,
+	renderTemplates
 ]);

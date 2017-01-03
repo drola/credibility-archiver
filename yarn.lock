@@ -519,6 +519,10 @@ right-align@^0.1.1:
   dependencies:
     align-text "^0.1.1"
 
+slimerjs@^0.10.2:
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/slimerjs/-/slimerjs-0.10.2.tgz#b0595ab89a0013a90081cf08977f45215d1e92c4"
+
 sntp@1.x.x:
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/sntp/-/sntp-1.0.9.tgz#6541184cc90aeea6c6e7b35e2659082443c66198"
