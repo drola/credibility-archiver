@@ -81,6 +81,71 @@ var sites = [
 		"slug": "vecer",
 		"url": "http://www.vecer.si",
 		"title": "Večer"
+	},
+	{
+		"slug": "zurnal24",
+		"url": "http://www.zurnal24.si/",
+		"title": "zurnal24"
+	},
+	{
+		"slug": "siolnet",
+		"url": "http://siol.net/",
+		"title": "Siol.net"
+	},
+	{
+		"slug": "bbc",
+		"url": "http://www.bbc.co.uk/",
+		"title": "BBC"
+	},
+	{
+		"slug": "newyorktimes",
+		"url": "http://www.nytimes.com/",
+		"title": "The New York Times"
+	},
+	{
+		"slug": "newyorktimes",
+		"url": "http://www.nytimes.com/",
+		"title": "The New York Times"
+	},
+	{
+		"slug": "foxnews",
+		"url": "http://www.foxnews.com/",
+		"title": "Fox News"
+	},
+	{
+		"slug": "planet",
+		"url": "http://www.planet.si/",
+		"title": "Planet.si"
+	},
+	{
+		"slug": "pozarreport",
+		"url": "http://www.pozareport.si/",
+		"title": "pozarreport.si"
+	},
+	{
+		"slug": "pozarreport",
+		"url": "http://www.pozareport.si/",
+		"title": "pozarreport.si"
+	},
+	{
+		"slug": "finance",
+		"url": "https://www.finance.si/",
+		"title": "Finance.si"
+	},
+	{
+		"slug": "primorskenovice",
+		"url": "http://www.primorske.si/",
+		"title": "Primorske novice"
+	},
+	{
+		"slug": "gorenjskiglas",
+		"url": "http://www.gorenjskiglas.si/",
+		"title": "Gorenjski glas"
+	},
+	{
+		"slug": "Mladina",
+		"url": "http://www.mladina.si/",
+		"title": "Mladina"
 	}
 ]; 
 
@@ -179,6 +244,6 @@ var renderTemplates = function(cb) {
 };
 
 async.series([
-	scrapeSites,
+	//scrapeSites,
 	renderTemplates
 ]);
