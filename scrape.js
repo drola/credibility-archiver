@@ -244,6 +244,6 @@ var renderTemplates = function(cb) {
 };
 
 async.series([
-	//scrapeSites,
+	scrapeSites,
 	renderTemplates
 ]);
